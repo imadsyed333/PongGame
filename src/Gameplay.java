@@ -8,7 +8,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.Rectangle;
 import java.text.DecimalFormat;
@@ -31,7 +30,9 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
     Timer timer = new Timer(5, this);
     DecimalFormat format = new DecimalFormat("00");
     DecimalFormat format2 = new DecimalFormat("0");
-    Image playerImage, botImage, ballImage;
+    Image playerImage, botImage, ballImage, backgroundImage;
+    Font scoreFont;
+
 
     ActionListener actionListener = ae -> {
         if (play) {
@@ -81,57 +82,66 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
         
-        Rectangle2D background = new Rectangle2D.Double(1, 1, 700, 600);
-        g2.setColor(Color.black);
-        g2.fill(background);
+        // Rectangle2D background = new Rectangle2D.Double(1, 1, 700, 600);
+        // g2.setColor(Color.black);
+        // g2.fill(background);
 
-        playerImage = Toolkit.getDefaultToolkit().getImage("player.png");
-        botImage = Toolkit.getDefaultToolkit().getImage("bot.png");
-        ballImage = Toolkit.getDefaultToolkit().getImage("ball.png");
+        playerImage = Toolkit.getDefaultToolkit().getImage("./src/player.png");
+        botImage = Toolkit.getDefaultToolkit().getImage("./src/paddle.png");
+        ballImage = Toolkit.getDefaultToolkit().getImage("./src/ball.png");
+        backgroundImage = Toolkit.getDefaultToolkit().getImage("./src/swirly background.jpg");
+
+        g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 
         if (play) {
             // player paddle
-            // g2.drawImage(playerImage, 670, playerY, this);
-            Rectangle2D player = new Rectangle2D.Double(670, playerY, 20, 100);
-            g2.setColor(Color.red);
-            g2.fill(player);
+            g2.drawImage(playerImage, 670, playerY, 20, 100, this);
+            // Rectangle2D player = new Rectangle2D.Double(670, playerY, 20, 100);
+            // g2.setColor(Color.red);
+            // g2.fill(player);
 
             // bot paddle
-            // g2.drawImage(botImage, 10, paddleY, this);
-            Rectangle2D bot = new Rectangle2D.Double(10, paddleY, 20, 100);
-            g2.setColor(Color.blue);
-            g2.fill(bot);
+            g2.drawImage(botImage, 10, paddleY, 20, 100, this);
+            // Rectangle2D bot = new Rectangle2D.Double(10, paddleY, 20, 100);
+            // g2.setColor(Color.blue);
+            // g2.fill(bot);
 
             // ball
-            // g2.drawImage(ballImage, (int) ballX, (int) ballY, this);
-            Ellipse2D ball = new Ellipse2D.Double(ballX, ballY, 30, 30);
+            g2.drawImage(ballImage, (int) ballX, (int) ballY, 30, 30, this);
+            // Ellipse2D ball = new Ellipse2D.Double(ballX, ballY, 30, 30);
+            // g2.setColor(Color.white);
+            // g2.fill(ball);
+
+            Rectangle2D halfLine = new Rectangle2D.Double(getWidth() / 2 - 2, 0, 4, 600);
             g2.setColor(Color.white);
-            g2.fill(ball);
-
-            Rectangle2D halfLine = new Rectangle2D.Double(340, 0, 5, 600);
             g2.fill(halfLine);
-
+            
             g2.setFont(new Font("serif", Font.BOLD, 40));
-            g2.drawString(format.format(minutes) + ':' + format.format(seconds), 0, 40);
-
-            g2.drawString(Integer.toString(playerScore) + "  " + Integer.toString(botScore), 313, 40);
+            g2.drawString(format.format(minutes) + ':' + format.format(seconds), 10, 40);
+            
+            getScore(g2, playerScore, botScore);
         }
 
         if (!play && !end) {
+            String title = "RALLY PONG";
+            String message = "Press ENTER to begin";
             g2.setColor(Color.yellow);
             g2.setFont(new Font("calibri", Font.BOLD, 30));
-            g2.drawString("Press ENTER to begin", 210, 300);
+
+            int messageWidth = g2.getFontMetrics().stringWidth(message);
+            g2.drawString("Press ENTER to begin", getWidth() / 2 - messageWidth / 2, 300);
 
             g2.setColor(Color.cyan);
             g2.setFont(new Font("calibri", Font.BOLD, 70));
-            g2.drawString("RALLY PONG", 165, 200);
-    
+
+            int titleWidth = g2.getFontMetrics().stringWidth(title);
+            g2.drawString("RALLY PONG", getWidth() / 2 - titleWidth / 2, 200);
         }
         if (!play && end) {
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("calibri", Font.BOLD, 30));
+            g2.setFont(new Font("", Font.BOLD, 30));
             g2.drawString("Press ENTER to try again", 200, 300);
-            g2.drawString(Integer.toString(playerScore) + "  " + Integer.toString(botScore), 313, 40);
+            getScore(g2, playerScore, botScore);
         }
 
         timer.start();
@@ -287,6 +297,14 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             ballXdir = -dir;
             ballYdir = -dir;
         }
+
+        else if (e.getKeyCode() == KeyEvent.VK_P && play && !end) {
+            play = false;
+        }
+
+        else if (e.getKeyCode() == KeyEvent.VK_R && !play && !end) {
+            play = true;
+        }
     }
 
     @Override
@@ -295,5 +313,17 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
 
     public void print(String message) {
         System.out.println(message);
+    }
+    
+    public void getScore(Graphics g, int playerScore, int botScore) {
+        int windowMiddle = getWidth() / 2;
+        String scorePlayer = Integer.toString(playerScore);
+        String scoreBot = Integer.toString(botScore);
+        g.setFont(new Font("serif", Font.BOLD, 40));
+        g.drawString(format.format(minutes) + ':' + format.format(seconds), 10, 40);
+        
+        int bWidth = g.getFontMetrics().stringWidth(scoreBot);
+        g.drawString(scoreBot, windowMiddle - bWidth - 5, 40);
+        g.drawString(scorePlayer, windowMiddle + 5, 40);
     }
 }
