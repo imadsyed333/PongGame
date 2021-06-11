@@ -96,21 +96,12 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         if (play) {
             // player paddle
             g2.drawImage(playerImage, 670, playerY, 20, 100, this);
-            // Rectangle2D player = new Rectangle2D.Double(670, playerY, 20, 100);
-            // g2.setColor(Color.red);
-            // g2.fill(player);
 
             // bot paddle
             g2.drawImage(botImage, 10, paddleY, 20, 100, this);
-            // Rectangle2D bot = new Rectangle2D.Double(10, paddleY, 20, 100);
-            // g2.setColor(Color.blue);
-            // g2.fill(bot);
-
+    
             // ball
             g2.drawImage(ballImage, (int) ballX, (int) ballY, 30, 30, this);
-            // Ellipse2D ball = new Ellipse2D.Double(ballX, ballY, 30, 30);
-            // g2.setColor(Color.white);
-            // g2.fill(ball);
 
             Rectangle2D halfLine = new Rectangle2D.Double(getWidth() / 2 - 2, 0, 4, 600);
             g2.setColor(Color.white);
