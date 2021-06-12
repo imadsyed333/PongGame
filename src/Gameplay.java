@@ -31,8 +31,9 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
     DecimalFormat format = new DecimalFormat("00");
     DecimalFormat format2 = new DecimalFormat("0");
     Image playerImage, botImage, ballImage, backgroundImage;
-    Font scoreFont;
-
+    Font bigFont = new Font("calibri", Font.BOLD, 70);
+    Font smallFont = new Font("serif", Font.BOLD, 40);
+    Font messageFont = new Font("calibri", Font.BOLD, 30);
 
     ActionListener actionListener = ae -> {
         if (play) {
@@ -41,29 +42,6 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             if (seconds == 60) {
                 minutes ++;
                 seconds = 0;
-            }
-            
-            // Keeps track of player and bot combo spells
-            if (playerCombo == comboInt) {
-                playerSeconds++;
-                // print("player is in combo " + Integer.toString(playerCombo) + " " + Integer.toString(comboInt));
-            }
-            if (botCombo == comboInt) {
-                botSeconds++;
-                // print("bot is in combo " + Integer.toString(botCombo) + " " + Integer.toString(comboInt));
-            
-            // Makes sure the bot or the player only achieve combo spells for <comboInt> seconds
-            if (playerSeconds == comboInt) {}
-                playerCombo = 0;
-                playerSeconds = 0;
-                comboInt++;
-                // print("player is not in combo " + Integer.toString(playerCombo) + " " + Integer.toString(comboInt));
-            }
-            if (botCombo == comboInt) {
-                botCombo = 0;
-                botSeconds = 0;
-                comboInt++;
-                // print("bot is not in combo " + Integer.toString(botCombo) + " " + Integer.toString(comboInt));
             }
         }
     };
@@ -81,10 +59,6 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
     public void paint(Graphics g) {
         super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
-        
-        // Rectangle2D background = new Rectangle2D.Double(1, 1, 700, 600);
-        // g2.setColor(Color.black);
-        // g2.fill(background);
 
         playerImage = Toolkit.getDefaultToolkit().getImage("./src/player.png");
         botImage = Toolkit.getDefaultToolkit().getImage("./src/paddle.png");
@@ -102,36 +76,61 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
     
             // ball
             g2.drawImage(ballImage, (int) ballX, (int) ballY, 30, 30, this);
-
+            
+            // halfway line
             Rectangle2D halfLine = new Rectangle2D.Double(getWidth() / 2 - 2, 0, 4, 600);
             g2.setColor(Color.white);
             g2.fill(halfLine);
             
-            g2.setFont(new Font("serif", Font.BOLD, 40));
+            // time
+            g2.setFont(smallFont);
             g2.drawString(format.format(minutes) + ':' + format.format(seconds), 10, 40);
             
+            // score
             getScore(g2, playerScore, botScore);
         }
 
         if (!play && !end) {
+            // title and opening message
             String title = "RALLY PONG";
             String message = "Press ENTER to begin";
-            g2.setColor(Color.yellow);
-            g2.setFont(new Font("calibri", Font.BOLD, 30));
+            int width;
 
-            int messageWidth = g2.getFontMetrics().stringWidth(message);
-            g2.drawString("Press ENTER to begin", getWidth() / 2 - messageWidth / 2, 300);
+            g2.setColor(Color.yellow);
+            g2.setFont(messageFont);
+
+            width = g2.getFontMetrics().stringWidth(message);
+            g2.drawString(message, getWidth() / 2 - width / 2, 300);
 
             g2.setColor(Color.cyan);
-            g2.setFont(new Font("calibri", Font.BOLD, 70));
+            g2.setFont(bigFont);
 
-            int titleWidth = g2.getFontMetrics().stringWidth(title);
-            g2.drawString("RALLY PONG", getWidth() / 2 - titleWidth / 2, 200);
+            width = g2.getFontMetrics().stringWidth(title);
+            g2.drawString(title, getWidth() / 2 - width / 2, 200);
         }
         if (!play && end) {
+            // final score and ending message
+            String endMessage = "Press ENTER to play again";
+            String winMessage;
+            int width;
+        
+            if (playerScore > botScore) {
+                winMessage = "You WIN!!!";
+            }
+            else {
+                winMessage = "You LOST!!!";
+            }
+
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("", Font.BOLD, 30));
-            g2.drawString("Press ENTER to try again", 200, 300);
+            g2.setFont(messageFont);
+            width = g2.getFontMetrics().stringWidth(endMessage);
+            g2.drawString(endMessage, getWidth() / 2 - width / 2, 300);
+
+            g2.setColor(Color.YELLOW);
+            g2.setFont(bigFont);
+            width = g2.getFontMetrics().stringWidth(winMessage);
+            g2.drawString(winMessage, getWidth() / 2 - width / 2, 200);
+        
             getScore(g2, playerScore, botScore);
         }
 
@@ -196,6 +195,7 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         }
     }
 
+    // Handles paddle speed change
     public void paddleSpeedChange(int speed) {
         if (paddleY >= 460 || ballY < paddleY) {
             paddleY -= speed;
@@ -306,15 +306,18 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         System.out.println(message);
     }
     
+    // Draws the score 
     public void getScore(Graphics g, int playerScore, int botScore) {
         int windowMiddle = getWidth() / 2;
         String scorePlayer = Integer.toString(playerScore);
         String scoreBot = Integer.toString(botScore);
-        g.setFont(new Font("serif", Font.BOLD, 40));
+        int width;
+
+        g.setFont(smallFont);
         g.drawString(format.format(minutes) + ':' + format.format(seconds), 10, 40);
         
-        int bWidth = g.getFontMetrics().stringWidth(scoreBot);
-        g.drawString(scoreBot, windowMiddle - bWidth - 5, 40);
+        width = g.getFontMetrics().stringWidth(scoreBot);
+        g.drawString(scoreBot, windowMiddle - width - 5, 40);
         g.drawString(scorePlayer, windowMiddle + 5, 40);
     }
 }
