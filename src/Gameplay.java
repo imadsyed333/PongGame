@@ -9,6 +9,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Ellipse2D;
 import java.awt.Rectangle;
 import java.text.DecimalFormat;
 import javax.swing.*;
@@ -20,13 +21,15 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
      */
     // Variable Declarations
     private static final long serialVersionUID = 1L;
-    boolean play = false, end = false;
-    int playerY = 240, paddleY = 240, dir = 4, seconds = 0, minutes = 0;
-    double ballXdir = -dir, ballYdir = -dir, ballX = 326, ballY = 275;
+    boolean play, end;
+    int playerY = 240, paddleY = 240, dir = (int) getHeight() / 150, seconds = 0, minutes = 0;
+    double ballXdir = -dir, ballYdir = -dir, ballX = getWidth() / 2 - 30, ballY = getHeight() / 2 - 30;
     int playerScore = 0, botScore = 0;
     int playerCombo = 0, botCombo = 0, comboInt = 3;
     int playerSeconds = 0, botSeconds = 0;
     int paddleYdir = dir;
+    int paddleHeight = (int) getHeight() / 6, paddleWidth = (int) getWidth() / 35;
+    int ballDim = (int) getHeight() / 20;
     Timer timer = new Timer(5, this);
     DecimalFormat format = new DecimalFormat("00");
     DecimalFormat format2 = new DecimalFormat("0");
@@ -54,6 +57,21 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         setFocusTraversalKeysEnabled(false);
     }
 
+    // Runs the game
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (play) {
+            paddleSpeedChange();
+            ballMovement();
+            
+            if (minutes == 1) {
+                play = false;
+                end = true;
+            }
+            repaint();
+        }  
+    }
+
     // Graphics
     @Override
     public void paint(Graphics g) {
@@ -69,16 +87,16 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
 
         if (play) {
             // player paddle
-            g2.drawImage(playerImage, 670, playerY, 20, 100, this);
+            g2.drawImage(playerImage, getWidth() - paddleWidth, playerY, paddleWidth, paddleHeight, this);
 
             // bot paddle
-            g2.drawImage(botImage, 10, paddleY, 20, 100, this);
+            g2.drawImage(botImage, 0, paddleY, paddleWidth, paddleHeight, this);
     
             // ball
-            g2.drawImage(ballImage, (int) ballX, (int) ballY, 30, 30, this);
+            g2.drawImage(ballImage, (int) ballX, (int) ballY, ballDim, ballDim, this);
             
             // halfway line
-            Rectangle2D halfLine = new Rectangle2D.Double(getWidth() / 2 - 2, 0, 4, 600);
+            Rectangle2D halfLine = new Rectangle2D.Double(getWidth() / 2 - 2, 0, 4, getHeight());
             g2.setColor(Color.white);
             g2.fill(halfLine);
             
@@ -88,6 +106,19 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             
             // score
             getScore(g2, playerScore, botScore);
+
+            // player tracking dot
+            g2.setColor(Color.cyan);
+            Ellipse2D playerDot = new Ellipse2D.Double(getWidth() - ballDim, playerY, 5, 5);
+            g2.draw(playerDot);
+
+            // paddle tracking dot
+            Ellipse2D paddleDot = new Ellipse2D.Double(10, paddleY, 5, 5);
+            g2.draw(paddleDot);
+
+            // ball tracking dot 
+            Ellipse2D ballDot = new Ellipse2D.Double(ballX, ballY, 5, 5);
+            g2.draw(ballDot);
         }
 
         if (!play && !end) {
@@ -108,6 +139,7 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             width = g2.getFontMetrics().stringWidth(title);
             g2.drawString(title, getWidth() / 2 - width / 2, 200);
         }
+
         if (!play && end) {
             // final score and ending message
             String endMessage = "Press ENTER to play again";
@@ -117,8 +149,11 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             if (playerScore > botScore) {
                 winMessage = "You WIN!!!";
             }
-            else {
+            else if (playerScore < botScore) {
                 winMessage = "You LOST!!!";
+            }
+            else {
+                winMessage = "You TIED!!!";
             }
 
             g2.setColor(Color.WHITE);
@@ -133,7 +168,6 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         
             getScore(g2, playerScore, botScore);
         }
-
         timer.start();
         counter.start();
     }
@@ -152,7 +186,7 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             else {
                 playerY = e.getY();
             }
-            if (playerY >= 460) {
+            if (playerY >= getHeight() - paddleHeight) {
                 playerY = 460;
             }
             if (playerY <= 0) {
@@ -161,23 +195,8 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         }
     }
 
-    // Runs the game
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (play) {
-            paddleMovement();
-            ballMovement();
-            
-            if (minutes == 1) {
-                play = false;
-                end = true;
-            }
-            repaint();
-        }  
-    }
-
-    // Handles paddle movement
-    public void paddleMovement() {
+    // Handles paddle 
+    public void paddleSpeedChange() {
         if (botCombo == comboInt) {
             paddleYdir = 6;
         }
@@ -185,19 +204,19 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             paddleYdir = 4;
         }
         if (ballX > 350 && ballX < 500) {
-            paddleSpeedChange(3);
+            paddleMovement(3);
         }
         else if (ballX < 350) {
-            paddleSpeedChange(paddleYdir);
+            paddleMovement(paddleYdir);
         }
         else {
-            paddleSpeedChange(1);
+            paddleMovement(1);
         }
     }
 
     // Handles paddle speed change
-    public void paddleSpeedChange(int speed) {
-        if (paddleY >= 460 || ballY < paddleY) {
+    public void paddleMovement(int speed) {
+        if (paddleY >= getHeight() - paddleHeight || ballY < paddleY) {
             paddleY -= speed;
         }
         if (paddleY <= 0 || ballY > paddleY){
@@ -210,51 +229,52 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
         ballX += ballXdir;
         ballY += ballYdir;
 
-        Rectangle ballBox = new Rectangle((int) ballX, (int) ballY, 30, 30);
-        Rectangle playerBox = new Rectangle(672, playerY, 20, 100);
-        Rectangle botBox = new Rectangle(0, paddleY, 20, 100);
+        Rectangle ballBox = new Rectangle((int) ballX, (int) ballY, ballDim, ballDim);
+        Rectangle playerBox = new Rectangle(getWidth() - paddleWidth, playerY, paddleWidth, paddleHeight);
+        Rectangle botBox = new Rectangle(0, paddleY, paddleWidth, paddleHeight);
 
         if (ballBox.intersects(playerBox)) {
-            if (ballY == playerY || ballY == playerY + 100) {
+            if (ballX + ballDim > getWidth() - paddleWidth && ballY + ballDim <= playerY) {
                 ballYdir = -ballYdir;
             }
-            ballSpeedChange(0.005);
-            playerCombo++;
-        }
-        else if (ballBox.intersects(botBox)) {
-            if (ballY == paddleY || ballY > paddleY + 100) {
-                ballYdir = -ballYdir;
+            else {
+                ballXdir = -ballXdir;
+                ballSpeedChange(0.005);
             }
-            ballSpeedChange(0.005);
-            botCombo++;
         }
 
-        if (ballY <= 0 || ballY >= 540) {
+        else if (ballBox.intersects(botBox)) {
+            if (ballX < paddleWidth && ballY + ballDim <= paddleY) {
+                ballYdir = -ballYdir;
+            }
+            else {
+                ballXdir = -ballXdir;
+                ballSpeedChange(0.005);
+            }
+        }
+        if (ballY <= 0 || ballY + ballDim >= getHeight()) {
             ballYdir = -ballYdir;
         }
-        if (ballX <= -90) {
+        if (ballX + (int) ballDim * 2 < 0) {
             playerScore++;
-            ballX = 326;
-            ballY = 275;
+            ballX = getWidth() / 2;
+            ballY = getHeight() / 2;
         }
-        else if (ballX >= 760) {
+        else if (ballX > getWidth() + ballDim) {
             botScore++;
-            ballX = 326;
-            ballY = 275;
+            ballX = getWidth() / 2;
+            ballY = getHeight() / 2;
         }
     }
 
     // Handles ball speed change
     public void ballSpeedChange(double force) {
-        ballXdir = -ballXdir;
-
         if (ballXdir < 0) {
             ballXdir -= force;
         }
         else {
             ballXdir += force;
         }
-
         if (ballYdir < 0) {
             ballYdir -= force;
         }
@@ -275,24 +295,28 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             end = false;
             minutes = 0;
             seconds = 0;
-            ballX = 326;
+            ballX = getWidth() / 2;
             dir = 4;
-            ballY = 275;
+            ballY = getHeight() / 2;
             playerScore = 0;
             botScore = 0;
             comboInt = 3;
             playerCombo = 0;
             playerSeconds = 0;
+            playerY = 240;
+            paddleY = 240;
             botCombo = 0;
             botSeconds = 0;
             ballXdir = -dir;
             ballYdir = -dir;
+            paddleHeight = (int) getHeight() / 6;
+            paddleWidth = (int) getWidth() / 35;
+            ballDim = (int) getHeight() / 20;
+            dir = (int) getHeight() / 150;
         }
-
         else if (e.getKeyCode() == KeyEvent.VK_P && play && !end) {
             play = false;
         }
-
         else if (e.getKeyCode() == KeyEvent.VK_R && !play && !end) {
             play = true;
         }
