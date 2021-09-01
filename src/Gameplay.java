@@ -28,8 +28,7 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
     int playerCombo = 0, botCombo = 0, comboInt = 3;
     int playerSeconds = 0, botSeconds = 0;
     int paddleYdir = dir;
-    int paddleHeight = (int) getHeight() / 6, paddleWidth = (int) getWidth() / 35;
-    int ballDim = (int) getHeight() / 20;
+    int paddleHeight, paddleWidth, ballDim;
     Timer timer = new Timer(5, this);
     DecimalFormat format = new DecimalFormat("00");
     DecimalFormat format2 = new DecimalFormat("0");
@@ -77,6 +76,9 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
     public void paint(Graphics g) {
         super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
+        paddleHeight = (int) getHeight() / 6;
+        paddleWidth = (int) getWidth() / 35;
+        ballDim = (int) getHeight() / 20;
 
         playerImage = Toolkit.getDefaultToolkit().getImage("./src/player.png");
         botImage = Toolkit.getDefaultToolkit().getImage("./src/paddle.png");
@@ -187,7 +189,7 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
                 playerY = e.getY();
             }
             if (playerY >= getHeight() - paddleHeight) {
-                playerY = 460;
+                playerY = getHeight() - paddleHeight;
             }
             if (playerY <= 0) {
                 playerY = 0;
@@ -198,15 +200,15 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
     // Handles paddle 
     public void paddleSpeedChange() {
         if (botCombo == comboInt) {
-            paddleYdir = 6;
+            paddleYdir = getHeight() / 100;
         }
         else {
-            paddleYdir = 4;
+            paddleYdir = getHeight() / 150;
         }
-        if (ballX > 350 && ballX < 500) {
+        if (ballX > getWidth() / 2 && ballX < getWidth() - 200) {
             paddleMovement(3);
         }
-        else if (ballX < 350) {
+        else if (ballX < getWidth() / 2) {
             paddleMovement(paddleYdir);
         }
         else {
@@ -239,7 +241,7 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             }
             else {
                 ballXdir = -ballXdir;
-                ballSpeedChange(0.005);
+                ballSpeedChange(getHeight() / 12000);
             }
         }
 
@@ -249,7 +251,7 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             }
             else {
                 ballXdir = -ballXdir;
-                ballSpeedChange(0.005);
+                ballSpeedChange(getHeight() / 12000);
             }
         }
         if (ballY <= 0 || ballY + ballDim >= getHeight()) {
