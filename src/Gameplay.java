@@ -261,11 +261,13 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener, Mou
             playerScore++;
             ballX = getWidth() / 2;
             ballY = getHeight() / 2;
+            dir = (int) getHeight() / 150;
         }
         else if (ballX > getWidth() + ballDim) {
             botScore++;
             ballX = getWidth() / 2;
             ballY = getHeight() / 2;
+            dir = (int) getHeight() / 150;
         }
     }
 
